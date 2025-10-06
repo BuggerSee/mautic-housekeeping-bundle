@@ -1,5 +1,25 @@
 # Housekeeping by Leuchtfeuer
+
+## Overview / Purpose / Features
 This plugin provides a Mautic Housekeeping Command for database cleanup purposes.
+
+## Requirements / Version Support
+- Mautic 6.0
+- PHP 8.1 or higher
+
+## Installation
+### Composer
+This plugin can be installed through composer.
+### Manual Installation
+Alternatively, it can be installed manually, following the usual steps:
+- Download the plugin
+- Unzip to the Mautic `plugins` directory
+- Rename folder to `LeuchtfeuerHousekeepingBundle`
+- In the Mautic backend, go to the `Plugins` page as an administrator
+- Click on the `Install/Upgrade Plugins` button to install the Plugin.
+  OR
+- If you have shell access, execute `php bin\console cache:clear` and `php bin\console mautic:plugins:reload` to install the plugins.
+
 
 ## Command
 Command to delete lead_event_log table entries, campaign_lead_event_log table entries, email_stats table entries where the referenced email entry is currently not published and email_stats_devices table entries.
@@ -23,13 +43,6 @@ By default, entries older than 365 days are deleted from the CampaignLeadEventLo
 -l  | --lead                    | Only entries from the lead_event_log table will be deleted.
 -p  | --page-hits               | Only entries from the page_hits table will be deleted.
 ```
-
-### Installation
-- Plugin must be saved under plugins/LeuchtfeuerHousekeepingBundle/
-- Afterwards, the cache must be cleared.
-
-### Compatiblity
-- Plugin is for Mautic 5 and also backwards compatible for Mautic 4.
 
 ### Notice
 - Every last entry from the campaign_lead_event_log per campaign will be kept. This is due to contacts restarting campaigns if there is no last step preserved in the log.
