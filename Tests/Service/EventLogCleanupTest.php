@@ -15,6 +15,10 @@ class EventLogCleanupTest extends TestCase
 {
     /**
      * @dataProvider runProvider
+     *
+     * @param non-empty-array<string, bool>                                         $operations
+     * @param array<array{0: string, 1: array<string, int>, 2: array<string, int>}> $queries
+     * @param array<int>                                                            $countRows
      */
     public function testDeleteEventLogEntries(array $operations, array $queries, array $countRows, string $message, bool $dryRun, ?int $campaignId): void
     {
@@ -71,7 +75,7 @@ class EventLogCleanupTest extends TestCase
         self::assertSame($message, $eventLogCleanup->deleteEventLogEntries(4, $campaignId, $dryRun, $operations, $output));
     }
 
-    public function runProvider(): \Generator
+    public static function runProvider(): \Generator
     {
         $daysOld = 4;
 
