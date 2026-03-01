@@ -409,6 +409,18 @@ class EventLogCleanup
             // Phase B: Orphan hit cleanup
             $movedHits = 0;
             if ($orphanHitCount > 0) {
+                // Collect orphan redirect IDs before reassignment (to zero out stale counters later)
+                $orphanRedirectIds = $this->connection->executeQuery(
+                    'SELECT DISTINCT orphan.id '
+                        .'FROM '.$p.'page_hits ph '
+                        .'INNER JOIN '.$p.'page_redirects orphan ON ph.redirect_id = orphan.id '
+                        .'LEFT JOIN '.$p.'channel_url_trackables cut ON cut.redirect_id = orphan.id '
+                        .'INNER JOIN '.$p.'page_redirects winner ON winner.url = orphan.url AND winner.id != orphan.id '
+                        .'INNER JOIN '.$p.'channel_url_trackables wcut ON wcut.redirect_id = winner.id '
+                        ."AND wcut.channel = 'email' AND wcut.channel_id = ph.email_id "
+                        .'WHERE cut.redirect_id IS NULL'
+                )->fetchFirstColumn();
+
                 // Get orphan hit stats grouped by winner (before reassignment)
                 $orphanStats = $this->connection->executeQuery(
                     'SELECT winner.id as winner_id, wcut.channel, wcut.channel_id, '
@@ -469,6 +481,15 @@ class EventLogCleanup
                             'addUniqueHits' => \PDO::PARAM_INT,
                             'winnerId'      => \PDO::PARAM_INT,
                         ]
+                    );
+                }
+
+                // Zero out stale counters on orphan redirects
+                if (!empty($orphanRedirectIds)) {
+                    $this->connection->executeQuery(
+                        'UPDATE '.$p.'page_redirects SET hits = 0, unique_hits = 0 WHERE id IN (:ids)',
+                        ['ids' => array_map('intval', $orphanRedirectIds)],
+                        ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]
                     );
                 }
             }
